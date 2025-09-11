@@ -11,7 +11,6 @@ export async function GET(
 ) {
   try {
     const { shortCode } = await ctx.params;
-    // Try to read the long URL, but do not fail OG generation if not found
     let longUrl: string | undefined;
     try {
       const { data } = await supabase
