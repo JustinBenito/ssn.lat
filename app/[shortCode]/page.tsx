@@ -41,9 +41,17 @@ export async function generateMetadata({ params }: { params: { shortCode: string
 
   // Derive domain from request headers so preview deployments generate correct absolute URLs
   const hdrs = await headers()
-  const host = hdrs.get('x-forwarded-host') || hdrs.get('host') || config.getDomain().replace(/^https?:\/\//, '')
-  const proto = hdrs.get('x-forwarded-proto') || 'https'
-  const domain = `${proto}://${host}`
+
+  let domain: string
+  if (process.env.NODE_ENV === 'production' && process.env.NEXT_PUBLIC_SITE_URL) {
+    domain = process.env.NEXT_PUBLIC_SITE_URL.startsWith('http')
+      ? process.env.NEXT_PUBLIC_SITE_URL
+      : `https://${process.env.NEXT_PUBLIC_SITE_URL}`
+  } else {
+    const host = hdrs.get('x-forwarded-host') || hdrs.get('host') || config.getBaseUrl()
+    const proto = hdrs.get('x-forwarded-proto') || 'https'
+    domain = `${proto}://${host}`
+  }
   // Prefer dynamic OG; fallback to static image if unavailable
   const ogImageUrl = `${domain}/api/shorten/og-image/${shortCode}`
   const fallbackImageUrl = `${domain}/lakshya.png`
